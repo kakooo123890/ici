@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malla Interactiva</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f8f8f8; padding: 20px; }
+  .semestre { margin-bottom: 20px; }
+  .titulo-semestre { font-weight: bold; margin-bottom: 10px; }
+  .ramos { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ramo {
+    width: 180px; padding: 10px; text-align: center;
+    border: 1px solid #ccc; border-radius: 5px;
+    background-color: #ffc0cb; /* rosado */
+    cursor: pointer; user-select: none;
+    transition: all 0.3s;
+  }
+  .aprobado {
+    background-color: #9370db; /* morado */
+    text-decoration: line-through;
+    color: #fff;
+  }
+  .bloqueado {
+    background-color: #ccc;
+    cursor: not-allowed;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<h1>Malla Interactiva Ingeniería Industrial</h1>
+
+<div id="malla"></div>
+
+<script>
+const ramos = [
+  { id: 'algebra', nombre: 'Álgebra y trigonometría', semestre: 1 },
+  { id: 'calculo_diff', nombre: 'Cálculo diferencias', semestre: 1 },
+  { id: 'quimica', nombre: 'Química general', semestre: 1 },
+  { id: 'intro', nombre: 'Introducción a la ingeniería industrial', semestre: 1 },
+  { id: 'formacion1', nombre: 'Formación integral institucional', semestre: 1 },
+
+  { id: 'algebra_lineal', nombre: 'Álgebra lineal', semestre: 2, prereqs: ['algebra'] },
+  { id: 'calculo_integral', nombre: 'Cálculo integral', semestre: 2, prereqs: ['calculo_diff'] },
+  { id: 'fisica', nombre: 'Física mecánica', semestre: 2, prereqs: ['algebra', 'calculo_diff'] },
+  { id: 'software', nombre: 'Software para ingeniería', semestre: 2 },
+  { id: 'formacion2', nombre: 'Formación integral institucional', semestre: 2 },
+  { id: 'taller_emprend', nombre: 'Taller de emprendimiento', semestre: 2 },
+
+  { id: 'multivariable', nombre: 'Cálculo multivariable', semestre: 3, prereqs: ['calculo_integral'] },
+  { id: 'estadistica', nombre: 'Estadística', semestre: 3, prereqs: ['calculo_integral'] },
+  { id: 'electromagnetismo', nombre: 'Electromagnetismo', semestre: 3, prereqs: ['fisica'] },
+  { id: 'algoritmo', nombre: 'Algoritmo y programación', semestre: 3 },
+  { id: 'formacion3', nombre: 'Formación integral extra programática', semestre: 3 },
+  { id: 'ingles_basico', nombre: 'Inglés básico', semestre: 3 },
+
+  { id: 'ecuaciones', nombre: 'Ecuaciones diferenciales', semestre: 4, prereqs: ['multivariable'] },
+  { id: 'teoria_sistemas', nombre: 'Teoría de sistemas', semestre: 4 },
+  { id: 'contabilidad', nombre: 'Contabilidad y costos', semestre: 4 },
+  { id: 'electrotecnia', nombre: 'Electrotecnia', semestre: 4, prereqs: ['electromagnetismo'] },
+  { id: 'termodinamica', nombre: 'Termodinámica', semestre: 4, prereqs: ['fisica'] },
+  { id: 'ingles_intermedio', nombre: 'Inglés intermedio', semestre: 4 },
+  { id: 'taller_cb', nombre: 'Taller de ciencias básicas', semestre: 4 },
+
+  { id: 'metodos_produccion', nombre: 'Métodos de producción', semestre: 5, prereqs: ['contabilidad'] },
+  { id: 'gestion_estrategica', nombre: 'Gestión estratégica', semestre: 5, prereqs: ['teoria_sistemas'] },
+  { id: 'microeconomia', nombre: 'Microeconomía', semestre: 5 },
+  { id: 'mecanica', nombre: 'Mecánica de sólidos y fluidos', semestre: 5, prereqs: ['fisica'] },
+  { id: 'inferencia', nombre: 'Inferencia estadística', semestre: 5, prereqs: ['estadistica'] },
+  { id: 'ingles_avanzado', nombre: 'Inglés avanzado', semestre: 5 },
+
+  { id: 'modelamiento', nombre: 'Modelamiento de sistemas informáticos', semestre: 6, prereqs: ['algoritmo'] },
+  { id: 'comportamiento', nombre: 'Comportamiento organizacional', semestre: 6 },
+  { id: 'opt_lineal', nombre: 'Optimización lineal', semestre: 6, prereqs: ['algebra_lineal'] },
+  { id: 'finanzas', nombre: 'Finanzas', semestre: 6, prereqs: ['contabilidad'] },
+  { id: 'electivo1', nombre: 'Electivo profesional I', semestre: 6 },
+  { id: 'formacion4', nombre: 'Formación integral institucional', semestre: 6 },
+  { id: 'taller_ci', nombre: 'Taller de ciencias de la ingeniería', semestre: 6 },
+
+  { id: 'gestion_op', nombre: 'Gestión de operaciones', semestre: 7, prereqs: ['metodos_produccion'] },
+  { id: 'gestion_servicios', nombre: 'Gestión de servicios', semestre: 7 },
+  { id: 'opt_no_lineal', nombre: 'Optimización no lineal', semestre: 7, prereqs: ['opt_lineal'] },
+  { id: 'eval_proyectos', nombre: 'Evaluación de proyectos', semestre: 7, prereqs: ['finanzas'] },
+  { id: 'electivo2', nombre: 'Electivo profesional II', semestre: 7 },
+  { id: 'gestion_calidad', nombre: 'Gestión de calidad', semestre: 7 },
+  { id: 'practica1', nombre: 'Práctica profesional I', semestre: 7 },
+
+  { id: 'econometria', nombre: 'Econometría', semestre: 8, prereqs: ['inferencia'] },
+  { id: 'gestion_innovacion', nombre: 'Gestión de la innovación', semestre: 8 },
+  { id: 'marketing', nombre: 'Marketing', semestre: 8 },
+  { id: 'electivo3', nombre: 'Electivo profesional III', semestre: 8 },
+  { id: 'formacion5', nombre: 'Formación integral institucional', semestre: 8 },
+  { id: 'taller_sp', nombre: 'Taller de sistemas productivos', semestre: 8 },
+
+  { id: 'legislacion', nombre: 'Legislación laboral y ambiental', semestre: 9 },
+  { id: 'logistica', nombre: 'Logística integral', semestre: 9, prereqs: ['gestion_op'] },
+  { id: 'simulacion', nombre: 'Simulación de procesos', semestre: 9, prereqs: ['opt_no_lineal'] },
+  { id: 'formulacion', nombre: 'Formulación y preparación de proyectos', semestre: 9, prereqs: ['eval_proyectos'] },
+  { id: 'electivo4', nombre: 'Electivo profesional IV', semestre: 9 },
+  { id: 'taller_emprend2', nombre: 'Taller de proyecto de emprendimiento', semestre: 9 },
+  { id: 'practica2', nombre: 'Práctica profesional II', semestre: 9 },
+
+  { id: 'inclusion', nombre: 'Inclusión al ambiente laboral', semestre: 10 },
+  { id: 'seminario', nombre: 'Seminario de titulación', semestre: 10 },
+  { id: 'electivo5', nombre: 'Electivo profesional V', semestre: 10 },
+  { id: 'formacion6', nombre: 'Formación integral institucional', semestre: 10 },
+];
+
+const estado = {};
+
+function crearMalla() {
+  const mallaDiv = document.getElementById('malla');
+  for (let s = 1; s <= 10; s++) {
+    const semestreDiv = document.createElement('div');
+    semestreDiv.className = 'semestre';
+    semestreDiv.innerHTML = `<div class="titulo-semestre">${s}° Semestre</div>`;
+    const ramosDiv = document.createElement('div');
+    ramosDiv.className = 'ramos';
+
+    ramos.filter(r => r.semestre === s).forEach(ramo => {
+      const div = document.createElement('div');
+      div.className = 'ramo';
+      div.id = ramo.id;
+      div.textContent = ramo.nombre;
+      div.onclick = () => toggleRamo(ramo.id);
+      estado[ramo.id] = false;
+      ramosDiv.appendChild(div);
+    });
+
+    semestreDiv.appendChild(ramosDiv);
+    mallaDiv.appendChild(semestreDiv);
+  }
+  actualizarEstados();
+}
+
+function actualizarEstados() {
+  ramos.forEach(ramo => {
+    const div = document.getElementById(ramo.id);
+    const prereqsCumplidos = !ramo.prereqs || ramo.prereqs.every(pr => estado[pr]);
+    if (!estado[ramo.id]) {
+      if (!prereqsCumplidos) {
+        div.classList.add('bloqueado');
+        div.onclick = null;
+      } else {
+        div.classList.remove('bloqueado');
+        div.onclick = () => toggleRamo(ramo.id);
+      }
+      div.classList.remove('aprobado');
+    } else {
+      div.classList.remove('bloqueado');
+      div.classList.add('aprobado');
+    }
+  });
+}
+
+function toggleRamo(id) {
+  estado[id] = !estado[id];
+  actualizarEstados();
+}
+
+crearMalla();
+</script>
+
+</body>
+</html>
